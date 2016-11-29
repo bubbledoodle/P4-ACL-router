@@ -17,7 +17,7 @@ limitations under the License.
 #include "includes/headers.p4"
 #include "includes/parser.p4"
 
-action DENY() {
+action _drop() {
     drop();
 }
 
@@ -41,7 +41,7 @@ table ipv4_lpm {
     }
     actions {
         set_nhop;
-        DENY;
+        _drop;
     }
     size: 1024;
 }
@@ -56,27 +56,55 @@ table forward {
     }
     actions {
         set_dmac;
-        DENY;
+        _drop;
     }
     size: 512;
 }
 
 
-action ALLOW() {
+action _nop() {
 }
 
-table acl {
+table tcp_acl {
 	reads {
 		tcp.srcPort : exact;
 		tcp.dstPort : exact;
 	}
 	actions {
-		ALLOW;
-		DENY;
+		_nop;
+		_drop;
 	}
 	size: 256;
 }
 
+table ip_acl {
+	reads {
+		ipv4.srcAddr : lpm;
+		ipv4.dstAddr : lpm;
+	}
+	actions {
+		_nop;
+		_drop;
+	}
+	size: 256;
+}
+
+action prot_tcp {
+}
+
+action prot_udp {
+}
+
+table prot_acl {
+	reads {
+		ipv4.protocol : exact;
+	}
+	actions {
+		_nop;
+		_drop;
+	}
+	size: 256;
+}
 action rewrite_mac(smac) {
     modify_field(ethernet.srcAddr, smac);
 }
@@ -87,7 +115,7 @@ table send_frame {
     }
     actions {
         rewrite_mac;
-        DENY;
+        _drop;
     }
     size: 256;
 }
@@ -95,8 +123,9 @@ table send_frame {
 control ingress {
     apply(ipv4_lpm);
     apply(forward);
-
-	apply(acl);
+    apply(ip_acl);
+    apply(prot_acl);
+    apply(tcp_acl);
 }
 
 control egress {
