@@ -1,5 +1,5 @@
-## Working LOG --- enable acl functionality
-updated Nov.30/2016
+# Working LOG --- enable acl functionality
+## updated Nov.30/2016
 
 ___Updating Aim:___ realizing and test each of ACL works correctly
 ### Updated items
@@ -61,10 +61,17 @@ How ever, our experiement experiencing a problem here: ** We have to change the 
 
 #### 3. prot_acl
 To ensure today's work completeness, we here still going to conduct protocal ACL test individually. 
-However now I successfully block protocol number 6, but not number 17. werid.
+However now I successfully block protocol number 6.
+For tested UDP, according to UDP properties, send UDP frame from h2 to h1, listen on port s1. sees nothing.
 
 ### To wrap up
 Partially realized ACL individually and tested.
-1. prot_acl udp and others
+1. others
 2. apply tables dependency
 3. topo scale up
+
+## updated Dec.1/2016
+___Updating Aim:___ realizing udp parsing, table dependency. Try to change the topo.
+
+### UDP parsing:
+Till now all individual test succeed. We then will move on to find out why apply table all at once at control ingress does not work.
