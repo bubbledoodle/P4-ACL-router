@@ -47,7 +47,7 @@ Upon trying to set up connection, packets are blocked and keep retransmit.
 #### 2. tcp_acl:
 This part test to drop packet from or desting to certain port number. Similar to the above experiement, send tcp packet from h2 to h1 with dst port as iperf default server port 5001. Here is what I got in this experiement:
 
-1. Test the connectivty amoung the link by run:
+First. Test the connectivty amoung the link by run:
 ```
 pingall
 ```
@@ -55,7 +55,7 @@ and get result:
 
 [![pingall to test connectivity](https://s12.postimg.org/g8h1phtst/20161130205719.jpg)](https://postimg.org/image/z0swt2q6x/)
 
-2. Generate tcp traffic with certain dst port number and fire wireshark, Then I got this:
+Second. Generate tcp traffic with certain dst port number and fire wireshark, Then I got this:
 [![wireshark listen with packets dst to port 5001 droped](https://s14.postimg.org/yqkrgopip/20161130234920.png)](https://postimg.org/image/j53fwqdkd/)
 How ever, our experiement experiencing a problem here: ** We have to change the control part of P4 file and to comments out not used ACL ** The possible reason for that is table dependency are not clear and here we just used simple sequential apply table method. 
 
