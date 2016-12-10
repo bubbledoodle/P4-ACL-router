@@ -71,7 +71,25 @@ Partially realized ACL individually and tested.
 3. topo scale up
 
 ## updated Dec.1/2016
-___Updating Aim:___ realizing udp parsing, table dependency. Try to change the topo.
+___Update Aim:___ realizing udp parsing, table dependency. Try to change the topo.
 
 ### UDP parsing:
 Till now all individual test succeed. We then will move on to find out why apply table all at once at control ingress does not work.
+
+
+## updated Dec.10 /2016
+___update Aim:___ 
+
+1. story of ACL, why we need ACL and some simple experiement design regarding it. 
+2. change topo and try add more host and default rules to the whole mininet environment
+3. try chained tables
+4. slices 5-10
+
+### Recent work: below are not written here in this log file.
+
+1. successed adding entry to ternary match type.
+2. successed bring up bmv2 in mininet as well as accessing to CLI all at the same time. Accessing the table
+3. successed communicating through thrift server on designed port. 
+4. successed see through parser and control, match-action table logic.
+
+### Today's work
