@@ -93,5 +93,5 @@ ___update Aim:___
 4. successed see through parser and control, match-action table logic.
 
 ### Today's work
-#### 1. What a ACL actually do?
-> 
+#### 1. What an ACL actually do?
+> 1. standard ACL only check the source address, either to block traffic from certain network, or allow access. Standard ACL should be as close as destination. 2.
