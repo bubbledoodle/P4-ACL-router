@@ -118,6 +118,7 @@ In this ping test, the priority of acl to allow all ping action is lower then bl
 ```
 
 ### Basic TCP test:
+Note that I saw something about ACL that the ACL is added on both direction, meaning there should be a pair of ACL whenever need a handshake behavior on both side. Here is a good example. If I only set up allow TCP connection to H3, then the TCP connection still will not successfully established. 
 ```
 >xterm h1 h3 # in mininet, following should work in reversed order.
 >> root@Node:h3# iperf -s # in h3 xterm terminal
@@ -130,3 +131,4 @@ Due to the acl rule of drop all packet originated from h2, we then choose to see
 >> root@Node:h2# iperf -s -u # in h2 xterm terminal
 >> root@Node:h1# iperf -c 10.0.1.10 -u # in h1 xterm terminal
 ```
+Finally I tested if I allow all ping action with higher priority then blocking H2 originated packet, meaning despite of packet source and destination IP address, if it is a ping related packet, then it gets through. I found H2 then can actually send out ping traffic. Huh, Priority rules.
