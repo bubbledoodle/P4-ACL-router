@@ -21,19 +21,35 @@ action _drop() {
     drop();
 }
 
-header_type routing_metadata_t {
-    fields {
-        nhop_ipv4 : 32;
-    }
-}
-
-metadata routing_metadata_t routing_metadata;
-
 action set_nhop(nhop_ipv4, port) {
     modify_field(routing_metadata.nhop_ipv4, nhop_ipv4);
     modify_field(standard_metadata.egress_spec, port);
     add_to_field(ipv4.ttl, -1);
 }
+
+action set_dmac(dmac) {
+    modify_field(ethernet.dstAddr, dmac);
+}
+
+action rewrite_mac(smac) {
+    modify_field(ethernet.srcAddr, smac);
+}
+
+#ifdef L4_OPERATION
+action set_egress_tcp_port() {
+	modify_field(l3_metadata.egress_l4_sport, tcp.srcPort);
+	modify_field(l3_metadata.egress_l4_dport, tcp.dstPort);
+}
+
+action set_egress_udp_port() {
+	modify_field(l3_metadata.egress_l4_sport, udp.srcPort);
+	modify_field(l3_metadata.egress_l4_dport, udp.dstPort);
+}
+#endif
+
+action _nop() {
+}
+
 
 table ipv4_lpm {
     reads {
@@ -43,11 +59,7 @@ table ipv4_lpm {
         set_nhop;
         _drop;
     }
-    size: 1024;
-}
-
-action set_dmac(dmac) {
-    modify_field(ethernet.dstAddr, dmac);
+    size: 256;
 }
 
 table forward {
@@ -58,29 +70,30 @@ table forward {
         set_dmac;
         _drop;
     }
-    size: 512;
+    size: 256;
 }
 
-
-action _nop() {
-}
-
-table tcp_acl {
+#ifdef L4_OPERATION
+table egress_l4_port_fields {
 	reads {
-		tcp.srcPort : exact;
-		tcp.dstPort : exact;
+		tcp : vaild;
+		udp : vaild;
 	}
 	actions {
-		_nop;
-		_drop;
+		nop;
+		set_egress_tcp_port;
+		set_egress_udp_port;
 	}
 	size: 256;
 }
 
 table ip_acl {
 	reads {
-		ipv4.srcAddr : lpm;
-		ipv4.dstAddr : lpm;
+		ipv4.srcAddr : ternary;
+		ipv4.dstAddr : ternary;
+		ipv4.protocol : ternary;
+		l3_metadata.l4_sport : ternary;
+		l3_metadata.l4_dport : ternary;
 	}
 	actions {
 		_nop;
@@ -88,16 +101,18 @@ table ip_acl {
 	}
 	size: 256;
 }
+#endif
 
-action prot_tcp {
-}
-
-action prot_udp {
-}
-
-table prot_acl {
+#ifndef L4_OPERATION
+table ip_acl {
 	reads {
-		ipv4.protocol : exact;
+		ipv4.srcAddr : ternary;
+		ipv4.dstAddr : ternary;
+		ipv4.protocol : ternary;
+		tcp.srcPort : ternary;
+		tcp.dstPort : ternary;
+		udp.srcPort : ternary;
+		udp.dstPort : ternary;
 	}
 	actions {
 		_nop;
@@ -105,9 +120,7 @@ table prot_acl {
 	}
 	size: 256;
 }
-action rewrite_mac(smac) {
-    modify_field(ethernet.srcAddr, smac);
-}
+#endif
 
 table send_frame {
     reads {
@@ -120,12 +133,46 @@ table send_frame {
     size: 256;
 }
 
+/*
+table tcp_acl {
+	reads {
+		tcp.dstPort : exact;
+	}
+	actions {
+		_nop;
+		_drop;
+	}
+	size: 256;
+}
+
+table udp_acl {
+    reads {
+        udp.dstPort : exact;
+    }
+    actions {
+        _nop;
+        _drop;
+    }
+    size: 256;
+}
+
+table prot_acl {
+	reads {
+		ipv4.protocol : exact;
+	}
+	actions {
+		_nop;
+		_drop;
+	}
+	size: 256;
+}
+
+*/
+
 control ingress {
     apply(ipv4_lpm);
     apply(forward);
     apply(ip_acl);
-    apply(prot_acl);
-    apply(tcp_acl);
 }
 
 control egress {

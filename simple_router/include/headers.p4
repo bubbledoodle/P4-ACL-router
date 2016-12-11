@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#define ETHERTYPE_IPV4 0x0800
+#define IPV4_TCP 0x06
+#define IPV4_UDP 0x11
+
 header_type ethernet_t {
     fields {
         dstAddr : 48;
@@ -39,13 +43,6 @@ header_type ipv4_t {
     }
 }
 
-
-/* Add your logic here ... */
-// -begin-
-
-// You should declare a tcp header type here ...
-// Note: Name the header `tcp_t` and fields: `srcPort`, `dstPort`, `seqNo`, `ackNo`, `dataOffset`, `res`, `flags`, `window`,
-//                                           `checksum`, and `urgentPtr`
 header_type tcp_t {
     fields {
         srcPort : 16;
@@ -61,5 +58,32 @@ header_type tcp_t {
     }
 }
 
-// -end-
+header_type udp_t {
+    fields {
+        srcPort : 16;
+        dstPort : 16;
+        datalength : 16;
+        checksum : 16;
+    }
+}
 
+header_type routing_metadata_t {
+    fields {
+        nhop_ipv4 : 32;
+    }
+}
+
+header_type l3_metadata_t {
+    fields {
+        l4_sport : 16;
+        l4_dport : 16;
+    }
+}
+
+header ethernet_t ethernet;
+header ipv4_t ipv4;
+header tcp_t tcp;
+header udp_t udp;
+
+metadata routing_metadata_t routing_metadata;
+metadata l3_metadata_t l3_metadata;

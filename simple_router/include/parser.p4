@@ -14,14 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 parser start {
     return parse_ethernet;
 }
-
-#define ETHERTYPE_IPV4 0x0800
-
-header ethernet_t ethernet;
 
 parser parse_ethernet {
     extract(ethernet);
@@ -30,10 +25,6 @@ parser parse_ethernet {
         default: ingress;
     }
 }
-
-#define IPV4_TCP 0x06
-
-header ipv4_t ipv4;
 
 field_list ipv4_checksum_list {
         ipv4.version;
@@ -66,27 +57,18 @@ parser parse_ipv4 {
     extract(ipv4);
     return select(latest.protocol) {
 
-        // Add your logic here ...
-        // -begin-
-
-        // You should check if the packet is tcp and then select the tcp parser function here ...
 		IPV4_TCP : parse_tcp;
-        // -end-
-
+        IPV4_UDP : parse_udp;
         default: ingress;
     }
 }
 
-// Add your logic here ...
-// -begin-
-
-// You should implement the following here ...
-// 1. create a tcp header instance, named: `tcp`
-header tcp_t tcp;
-// 2. write the tcp parser function, named: `parse_tcp`
 parser parse_tcp {
     extract(tcp);
     return ingress;
 }
-// -end-
 
+parser parse_udp {
+    extract(udp);
+    return ingress;
+}
