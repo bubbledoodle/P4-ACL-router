@@ -95,4 +95,38 @@ ___update Aim:___
 ### Today's work
 #### 1. What an ACL actually do?
 > 1. standard ACL only check the source address, either to block traffic from certain network, or allow access. Standard ACL should be as close as destination. 
-> 2. ds
+
+## Update Dec.11 /2016
+___Update Aim:___ write ACL rules, test them. slices
+
+### Topology as written. 
+Rules to realize in priority order:
+
+1. Block all traffic from IP: H2 [IP src range block]
+2. allow tcp connection from h1 to h3 [protocal] / allow all ping action.
+3. allow udp connection from h1 to h2 through port 5001 [dstport #]
+
+### Basic ping test:
+In this ping test, the priority of acl to allow all ping action is lower then block H2 originated packets. So all ping direct to or from H2 are droped.
+```
+./reset_mininet.sh
+./run_demo.bash
+./run_cli.bash -c localhost:22222 < command_basic_routing.txt
+>pingall # in miminet
+./run_cli.bash -c localhost:22222 < command_acl.txt
+>pingall # also in mininet
+```
+
+### Basic TCP test:
+```
+>xterm h1 h3 # in mininet, following should work in reversed order.
+>> root@Node:h3# iperf -s # in h3 xterm terminal
+>> root@Node:h1# iperf -c 10.0.2.10 # in h2 xterm terminal
+```
+### Basic port number test:
+Due to the acl rule of drop all packet originated from h2, we then choose to see if open up a udp server with certain port will receive any packet or not.
+```
+>xterm h1 h2 # in mininet
+>> root@Node:h2# iperf -s -u # in h2 xterm terminal
+>> root@Node:h1# iperf -c 10.0.1.10 -u # in h1 xterm terminal
+```
